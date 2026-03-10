@@ -1,21 +1,154 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simple Landing Page</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      color: #222;
+    }
+
+    section {
+      padding: 60px 20px;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .hero {
+      background: #f5f7ff;
+      text-align: center;
+      padding: 90px 20px;
+    }
+
+    .hero h1 {
+      font-size: 2.2rem;
+      margin-bottom: 14px;
+    }
+
+    .hero p {
+      max-width: 650px;
+      margin: 0 auto 20px;
+    }
+
+    .btn {
+      display: inline-block;
+      background: #1f4dff;
+      color: #fff;
+      text-decoration: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+    }
+
+    h2 {
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .about p,
+    .why p {
+      max-width: 800px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .why-list {
+      margin-top: 20px;
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+
+    .why-item,
+    .testimonial-card {
+      border: 1px solid #e3e3e3;
+      border-radius: 8px;
+      padding: 16px;
+      background: #fff;
+    }
+
+    .testimonials {
+      background: #fafafa;
+    }
+
+    .testimonial-grid {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      margin-top: 20px;
+    }
+
+    .testimonial-card h4 {
+      margin-top: 10px;
+      font-size: 1rem;
+      color: #555;
+    }
+
+    footer {
+      background: #111;
+      color: #fff;
+      text-align: center;
+      padding: 20px;
+    }
+  </style>
 </head>
 <body>
-    <button id="btn">Submit</button>
-</body>
-<script>
-    let button = document.getElementById("btn");
-    button.addEventListener("click", function() {
-    button.innerText = "Please wait...";
-    button.style.backgroundColor = "green";
-    document.body.style.backgroundColor = "black"
-    button.disabled = false;
-    });
+  <section class="hero">
+    <div class="container">
+      <h1>Build Your Next Big Idea</h1>
+      <p>We help businesses create clean, modern, and effective digital experiences that drive real growth.</p>
+      <a href="#about" class="btn">Get Started</a>
+    </div>
+  </section>
 
-</script>
+  <section id="about" class="about">
+    <div class="container">
+      <h2>About Us</h2>
+      <p>We are a small and focused team delivering simple solutions for websites, branding, and online presence. Our goal is to make your business stand out with clarity and confidence.</p>
+    </div>
+  </section>
+
+  <section class="why">
+    <div class="container">
+      <h2>Why Choose Us</h2>
+      <p>We keep things practical, transparent, and result-oriented from start to finish.</p>
+      <div class="why-list">
+        <div class="why-item">Fast delivery with clear communication.</div>
+        <div class="why-item">Modern and responsive design approach.</div>
+        <div class="why-item">Support that continues after launch.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="testimonials">
+    <div class="container">
+      <h2>Testimonials</h2>
+      <div class="testimonial-grid">
+        <div class="testimonial-card">
+          <p>"Very smooth process and excellent final result. Highly recommended."</p>
+          <h4>- Priya S.</h4>
+        </div>
+        <div class="testimonial-card">
+          <p>"Professional team, clean design, and delivered on time."</p>
+          <h4>- Rahul K.</h4>
+        </div>
+        <div class="testimonial-card">
+          <p>"They understood our needs quickly and built exactly what we wanted."</p>
+          <h4>- Neha M.</h4>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>&copy; 2026 Your Company. All rights reserved.</p>
+  </footer>
+</body>
 </html>

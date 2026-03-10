@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Form Validation</title>
+</head>
+<body>
+
+<form onsubmit="validateForm(event)">
+    
+    <input type="text" name="username" id="name" placeholder="Enter your name">
+    <input id="password" name="password" placeholder="Password" type="password">
+    <button type="submit">Submit</button>
+
+</form>
+
+<script>
+function validateForm(event) {
+    event.preventDefault();
+
+    let name = document.getElementById("name").value;
+    let password = document.getElementById("password").value;
+
+    if (password.length < 8 || password.length > 10) {
+        alert("Password length must be between 8 and 10 characters");
+        return;
+    }
+
+    if (password[0] !== password[0].toUpperCase()) {
+        alert("First letter must be uppercase");
+        return;
+    }
+
+    alert("Form submitted successfully");
+}
+</script>
+
+</body>
+</html>

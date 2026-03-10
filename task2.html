@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    .button{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+</style>
+<body>
+    <h2 style="color: white;">Color Changer</h2>
+    <div class="button">
+    <button class="color-btn">Red</button>
+    <button class="color-btn">Green</button>
+    <button class="color-btn">Blue</button>
+    </div>
+    <button class="reset">Reset</button>
+</body>
+
+<script>
+    const buttons = document.querySelectorAll(".color-btn")
+    console.log(buttons);
+    buttons.forEach(function (btn) {
+        btn.addEventListener("click", function (event) {
+            const color = event.target.innerText;
+            document.body.style.backgroundColor = color;
+        })
+
+    })
+</script>
+</html>
