@@ -18,8 +18,7 @@ function validateForm(event) {
     event.preventDefault();
 
     let name = document.getElementById("name").value;
-    let password = document.getElementById("password").value;
-
+    let password = document.getElementById("password").value
     if (password.length < 8 || password.length > 10) {
         alert("Password length must be between 8 and 10 characters");
         return;

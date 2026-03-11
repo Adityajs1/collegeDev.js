@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'DM Sans', sans-serif; }
+        h2 { font-family: 'DM Serif Display', serif; }
+        .completed span { text-decoration: line-through; opacity: 0.4; }
+        li { transition: all 0.2s ease; }
+        li:hover { transform: translateX(4px); }
+    </style>
+</head>
+<body class="min-h-screen bg-amber-50 flex items-center justify-center p-6">
+
+    <div class="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 border border-amber-100">
+        <h2 class="text-4xl text-stone-800 mb-1">My Tasks</h2>
+        <p class="text-stone-400 text-sm mb-6">Stay on top of your day</p>
+
+        <div class="flex gap-2 mb-6">
+            <input
+                type="text"
+                id="taskInput"
+                placeholder="Add a new task..."
+                onkeydown="if(event.key==='Enter') addTask()"
+                class="flex-1 px-4 py-2.5 rounded-xl border border-stone-200 bg-stone-50 text-stone-700 placeholder-stone-300 focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent text-sm"
+            >
+            <button
+                onclick="addTask()"
+                class="px-5 py-2.5 bg-amber-400 hover:bg-amber-500 text-white font-medium rounded-xl transition-colors text-sm shadow-sm"
+            >
+                Add
+            </button>
+        </div>
+
+        <ul id="taskList" class="space-y-2"></ul>
+
+        <p id="emptyMsg" class="text-center text-stone-300 text-sm py-6">No tasks yet — add one above ✦</p>
+    </div>
+
+    <script>
+        function addTask() {
+            const input = document.getElementById("taskInput");
+            const taskText = input.value.trim();
+
+            if (taskText === "") {
+                input.classList.add("ring-2", "ring-red-300");
+                setTimeout(() => input.classList.remove("ring-2", "ring-red-300"), 1000);
+                return;
+            }
+
+            document.getElementById("emptyMsg").style.display = "none";
+
+            const li = document.createElement("li");
+            li.className = "flex items-center justify-between gap-3 px-4 py-3 bg-stone-50 rounded-xl border border-stone-100 group";
+
+            const span = document.createElement("span");
+            span.textContent = taskText;
+            span.className = "flex-1 text-stone-700 text-sm cursor-pointer select-none";
+            span.onclick = function () {
+                li.classList.toggle("completed");
+                span.classList.toggle("line-through");
+                span.classList.toggle("text-stone-300");
+            };
+
+            const deleteBtn = document.createElement("button");
+            deleteBtn.textContent = "✕";
+            deleteBtn.className = "text-stone-300 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100 text-xs font-bold";
+            deleteBtn.onclick = function () {
+                li.remove();
+                if (!document.getElementById("taskList").children.length)
+                    document.getElementById("emptyMsg").style.display = "";
+            };
+
+            li.appendChild(span);
+            li.appendChild(deleteBtn);
+            document.getElementById("taskList").appendChild(li);
+            
+            input.value = "";
+            input.focus();
+        }
+    </script>
+
+</body>
+</html>
