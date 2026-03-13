@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AI Recipe Maker</title>
+</head>
+<body>
+<div class="container">
+<h1> AI Recipe Maker</h1>
+<p id="status">Checking</p>
+<label>Ingredients (comma separated)</label>
+<textarea 
+id="ingredients" 
+rows="3" 
+placeholder="e.g. rice, garlic, onion, tomato">
+</textarea>
+<button onclick="generate()">Generate Recipe</button>
+<div id="output"></div>
+</div>
+<script>
+async function callAI(prompt){
+const response = await fetch(API_URL,{
+method:"POST",
+headers:{
+"Content-Type":"application/json",
+"Authorization":"Bearer " + API_KEY
+},
+body:JSON.stringify({
+model: "llama-3.1-8b-instant",
+messages:[
+{
+role:"user",
+content:prompt
+}
+]
+})
+});
+const data = await response.json();
+if(!response.ok){
+throw new Error(data.error?.message || "API error");
+}
+return data.choices[0].message.content;
+}
+callAI("Say ok")
+.then(()=>{
+document.getElementById("status").textContent="Connected";
+})
+.catch(err=>{
+document.getElementById("status").textContent=""+err.message;
+});
+async function generate(){
+
+const ingredients = document.getElementById("ingredients").value.trim();
+
+if(!ingredients){
+alert("Please enter ingredients");
+return;
+}
+
+const output = document.getElementById("output");
+output.innerHTML = "Generating recipe...";
+
+try{
+
+const prompt = `
+Create a recipe using: ${ingredients}.
+Return ONLY JSON in this format:
+{
+"title":"",
+"ingredients":[],
+"steps":[]
+}
+`;
+const recipeText = await callAI(prompt);
+
+const recipe = JSON.parse(recipeText);
+let html = "<h2>"+recipe.title+"</h2>";
+
+html += "<h3>Ingredients</h3>";
+
+recipe.ingredients.forEach(i=>{
+html += i + "<br>";
+});
+
+html += "<h3>Steps</h3>";
+recipe.steps.forEach((s,i)=>{
+html += (i+1)+". "+s+"<br>";
+});
+output.innerHTML = html;
+}catch(err){
+output.textContent = "Error: " + err.message;
+}
+}
+</script>
+</body>
+</html>
