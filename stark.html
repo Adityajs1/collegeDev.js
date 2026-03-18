@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>A.R.J.U.N.V.I.S</title>
+<script src="https://cdn.jsdelivr.net/npm/mqtt@5.10.1/dist/mqtt.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+/* ══ THEME VARS ══ */
+:root {
+  --accent:#800080; --accent2:#600060;
+  --green:#16a34a; --green-glow:rgba(22,163,74,0.18);
+  --red:#dc2626; --red-dim:rgba(220,38,38,0.13);
+  --amber:#d97706; --amber-dim:rgba(217,119,6,0.14);
+  --teal:#0d9488; --purple:#7c3aed;
+  --r:14px; --rs:9px;
+}
+[data-theme="dark"] {
+  --bg:#0a0c12;
+  --gbg:rgba(14,16,26,0.58);
+  --gbg2:rgba(10,12,20,0.68);
+  --gb:rgba(255,255,255,0.09);
+  --gb2:rgba(255,255,255,0.15);
+  --tbar:rgba(8,10,18,0.78);
+  --text:#f0f2f8; --text2:#9aa0b8; --muted:#50586a;
+  --ico:rgba(255,255,255,0.08);
+  --tog:rgba(255,255,255,0.13); --knob:rgba(255,255,255,0.5);
+  --inp:rgba(0,0,0,0.35); --inpb:rgba(255,255,255,0.12);
+  --hov:rgba(255,255,255,0.06); --nact:rgba(255,255,255,0.10);
+  --rcon:rgba(14,50,24,0.68); --sec:rgba(154,160,184,0.65);
+  --ov:linear-gradient(150deg,rgba(5,8,18,0.52),rgba(3,5,14,0.70));
+  --ftxt:rgba(150,158,184,0.5);
+}
+[data-theme="light"] {
+  --bg:#eef2ff;
+  --gbg:rgba(255,255,255,0.58);
+  --gbg2:rgba(255,255,255,0.70);
+  --gb:rgba(255,255,255,0.80);
+  --gb2:rgba(180,200,240,0.55);
+  --tbar:rgba(255,255,255,0.70);
+  --text:#0f1420; --text2:#354060; --muted:#6b7899;
+  --ico:rgba(128,0,128,0.10);
+  --tog:rgba(0,0,0,0.13); --knob:white;
+  --inp:rgba(255,255,255,0.75); --inpb:rgba(100,130,220,0.22);
+  --hov:rgba(128,0,128,0.08); --nact:rgba(128,0,128,0.12);
+  --rcon:rgba(210,255,230,0.60); --sec:#6b7899;
+  --ov:linear-gradient(150deg,rgba(255,255,255,0.18),rgba(220,235,255,0.14));
+  --ftxt:rgba(90,108,150,0.65);
+}
+
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html{scroll-behavior:smooth;}
+body{
+  font-family:'DM Sans',sans-serif;
+  color:var(--text);
+  min-height:100vh;
+  overflow-x:hidden;
+  background-color:var(--bg);
+  background-size:cover;
+  background-position:center center;
+  background-repeat:no-repeat;
+  background-attachment:scroll;
+  transition:color 0.3s;
+}
+
+#bg{display:none;}
+#bgo{
+  position:fixed;inset:0;z-index:0;
+  background:var(--ov);
+  pointer-events:none;
+  transition:background 0.4s;
+}
+
+/* ══ TOPBAR ══ */
+.topbar{
+  position:sticky;top:0;z-index:100;
+  background:var(--tbar);
+  backdrop-filter:blur(24px) saturate(1.5);
+  -webkit-backdrop-filter:blur(24px) saturate(1.5);
+  border-bottom:1px solid var(--gb);
+  height:54px;padding:0 16px;
+  display:flex;align-items:center;gap:0;
+  transition:background 0.3s;
+}
+.logo{display:flex;align-items:center;gap:8px;margin-right:24px;flex-shrink:0;text-decoration:none;}
+.logo-icon{
+  width:30px;height:30px;border-radius:8px;
+  background:linear-gradient(135deg,var(--accent),var(--purple));
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.logo-icon svg{width:15px;height:15px;stroke:white;fill:none;stroke-width:2;}
+.logo-text{font-size:13px;font-weight:700;color:var(--text);letter-spacing:0.5px;}
+.nav{display:flex;align-items:center;gap:2px;flex:1;}
+.nav-btn{
+  display:flex;align-items:center;gap:5px;
+  padding:6px 11px;border-radius:8px;
+  font-size:13px;font-weight:500;color:var(--text2);
+  cursor:pointer;border:none;background:none;
+  transition:all 0.15s;font-family:'DM Sans',sans-serif;white-space:nowrap;
+}
+.nav-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0;}
+.nav-btn:hover{background:var(--hov);color:var(--text);}
+.nav-btn.active{background:var(--nact);color:var(--text);outline:1px solid var(--gb2);}
+.tbar-right{margin-left:auto;display:flex;align-items:center;gap:7px;flex-shrink:0;}
+.theme-btn{
+  width:32px;height:32px;border-radius:8px;
+  border:1px solid var(--gb2);background:var(--ico);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  color:var(--text2);transition:all 0.15s;
+}
+.theme-btn:hover{background:var(--hov);color:var(--text);}
+.theme-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;}
+.pill{
+  display:flex;align-items:center;gap:5px;
+  padding:4px 10px;border-radius:99px;
+  border:1px solid var(--gb2);background:var(--gbg);
+  backdrop-filter:blur(10px);
+  font-size:10px;font-weight:500;white-space:nowrap;color:var(--text2);
+  transition:all 0.3s;
+}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--muted);transition:all 0.3s;flex-shrink:0;}
+.pill.connected .dot{background:var(--green);box-shadow:0 0 6px var(--green);}
+.pill.connected{border-color:rgba(22,163,74,0.4);color:var(--green);}
+.pill.connecting .dot{background:var(--amber);animation:blink 1s infinite;}
+.pill.connecting{color:var(--amber);border-color:rgba(217,119,6,0.4);}
+.pill.error .dot{background:var(--red);}
+.pill.error{color:var(--red);border-color:rgba(220,38,38,0.4);}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+
+/* ══ PAGES ══ */
+.page{
+  display:none;
+  max-width:860px;margin:0 auto;
+  padding:20px 16px 100px;
+  position:relative;z-index:2;
+  animation:fu 0.18s ease;
+}
+.page.active{display:block;}
+@keyframes fu{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+/* ══ GLASS CARD ══ */
+.gc{
+  background:var(--gbg);
+  backdrop-filter:blur(20px) saturate(1.4);
+  -webkit-backdrop-filter:blur(20px) saturate(1.4);
+  border:1px solid var(--gb);
+  border-radius:var(--r);
+}
+
+/* ══ CONNECT BAR ══ */
+.conn-bar{
+  display:flex;align-items:center;gap:10px;
+  background:var(--gbg);
+  backdrop-filter:blur(20px) saturate(1.4);
+  -webkit-backdrop-filter:blur(20px) saturate(1.4);
+  border:1px solid var(--gb);
+  border-radius:var(--r);padding:10px 14px;margin-bottom:12px;
+}
+.cb-ico{flex-shrink:0;opacity:0.4;}
+.cb-ico svg{width:16px;height:16px;stroke:var(--text);fill:none;stroke-width:2;}
+.cb-info{flex:1;min-width:0;}
+.cb-lbl{font-size:9px;color:var(--muted);margin-bottom:1px;letter-spacing:0.07em;text-transform:uppercase;}
+.cb-val{font-size:12px;font-weight:500;font-family:'JetBrains Mono',monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text);}
+.cb-val.empty{color:var(--muted);font-family:'DM Sans',sans-serif;font-size:11px;}
+.cb-actions{display:flex;gap:6px;align-items:center;flex-shrink:0;}
+.btn-connect{
+  display:flex;align-items:center;gap:5px;
+  padding:7px 14px;border-radius:var(--rs);
+  font-size:12px;font-weight:600;cursor:pointer;border:none;
+  transition:all 0.15s;font-family:'DM Sans',sans-serif;white-space:nowrap;
+}
+.btn-connect svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2.5;}
+.btn-connect.on{background:#800080;color:white;box-shadow:0 2px 10px rgba(128,0,128,0.35);}
+.btn-connect.on:hover{background:var(--accent2);}
+.btn-connect.off{background:var(--red-dim);color:var(--red);border:1px solid rgba(220,38,38,0.3);}
+.btn-connect:active{transform:scale(0.97);}
+.btn-ghost{
+  padding:7px 11px;border-radius:var(--rs);
+  font-size:12px;font-weight:500;cursor:pointer;
+  border:1px solid var(--gb2);background:transparent;color:var(--text2);
+  transition:all 0.15s;font-family:'DM Sans',sans-serif;white-space:nowrap;
+}
+.btn-ghost:hover{color:var(--text);background:var(--hov);}
+
+/* ══ DEVICE BANNER ══ */
+.dev-banner{
+  display:flex;align-items:center;gap:12px;
+  background:var(--gbg);
+  backdrop-filter:blur(20px) saturate(1.4);
+  -webkit-backdrop-filter:blur(20px) saturate(1.4);
+  border:1px solid var(--gb);
+  border-radius:var(--r);padding:13px 16px;margin-bottom:16px;
+}
+.dev-ava{
+  width:42px;height:42px;border-radius:10px;flex-shrink:0;
+  background:rgba(128,0,128,0.12);border:1px solid rgba(128,0,128,0.25);
+  display:flex;align-items:center;justify-content:center;
+}
+.dev-ava svg{width:21px;height:21px;stroke:var(--accent);fill:none;stroke-width:1.5;}
+.dev-info{flex:1;min-width:0;}
+.dev-name{font-size:14px;font-weight:600;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.dev-meta{font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.online-badge{
+  display:none;align-items:center;gap:4px;
+  font-size:10px;font-weight:600;color:var(--green);
+  background:var(--green-glow);padding:4px 10px;border-radius:99px;flex-shrink:0;
+  border:1px solid rgba(22,163,74,0.22);
+}
+.online-dot{width:5px;height:5px;border-radius:50%;background:var(--green);animation:blink 2s infinite;}
+
+/* ══ SECTION LABEL ══ */
+.sec{
+  font-size:9px;font-weight:700;letter-spacing:0.12em;
+  text-transform:uppercase;color:var(--sec);
+  margin-bottom:8px;padding-left:1px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.all-btn{
+  background:transparent;color:var(--muted);border:1px solid var(--gb2);
+  border-radius:99px;padding:3px 11px;font-size:9px;cursor:pointer;
+  transition:all 0.15s;font-family:'DM Sans',sans-serif;
+}
+.all-btn:hover{color:var(--red);border-color:rgba(220,38,38,0.4);}
+.refresh-btn{color:var(--text2)!important;}
+.refresh-btn:hover{color:var(--accent)!important;border-color:rgba(128,0,128,0.4)!important;}
+.refresh-btn.spinning svg{animation:spin 0.7s linear infinite;}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+/* ══ RELAY GRID ══ */
+.relay-grid{
+  display:grid;grid-template-columns:repeat(2,1fr);
+  gap:10px;margin-bottom:16px;
+}
+.rc{
+  background:var(--gbg);
+  backdrop-filter:blur(18px) saturate(1.3);
+  -webkit-backdrop-filter:blur(18px) saturate(1.3);
+  border:1px solid var(--gb);
+  border-radius:var(--r);padding:14px;
+  cursor:pointer;
+  transition:border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  user-select:none;position:relative;overflow:hidden;
+}
+.rc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--gb);transition:background 0.3s;}
+.rc.on::before{background:linear-gradient(90deg,var(--green),var(--teal));}
+.rc.on{border-color:rgba(22,163,74,0.28);background:var(--rcon);}
+.rc:active{opacity:0.85;}
+.rc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
+.rc-ico{
+  width:34px;height:34px;border-radius:8px;
+  background:var(--ico);display:flex;align-items:center;justify-content:center;transition:background 0.3s;
+}
+.rc.on .rc-ico{background:rgba(22,163,74,0.15);}
+.rc-ico svg{width:16px;height:16px;stroke:var(--text);fill:none;stroke-width:1.8;transition:all 0.3s;}
+.rc.off .rc-ico svg{opacity:0.3;}
+.rc.on .rc-ico svg{stroke:var(--green);}
+.toggle{
+  width:36px;height:20px;
+  background:var(--tog);border:1px solid var(--gb2);
+  border-radius:99px;position:relative;transition:all 0.22s;flex-shrink:0;
+}
+.toggle::after{
+  content:'';position:absolute;top:3px;left:3px;
+  width:12px;height:12px;border-radius:50%;
+  background:var(--knob);opacity:0.6;transition:all 0.22s;
+}
+.rc.on .toggle{background:var(--green);border-color:var(--green);}
+.rc.on .toggle::after{transform:translateX(16px);opacity:1;}
+.rc-name-wrap{display:flex;align-items:center;gap:4px;margin-bottom:2px;}
+.rc-name{font-size:12px;font-weight:500;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.rc-edit-btn{
+  width:20px;height:20px;border-radius:5px;flex-shrink:0;
+  border:1px solid var(--gb2);background:var(--ico);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--muted);transition:all 0.15s;padding:0;opacity:0.6;
+}
+.rc-edit-btn:hover{opacity:1;color:var(--accent);border-color:rgba(128,0,128,0.4);}
+.rc-edit-btn svg{width:10px;height:10px;stroke:currentColor;fill:none;stroke-width:2;}
+.rc-state{font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace;}
+.rc.on .rc-state{color:var(--green);}
+.rc-name-input{
+  font-size:12px;font-weight:500;font-family:'DM Sans',sans-serif;
+  background:var(--inp);border:1px solid var(--accent);
+  border-radius:5px;color:var(--text);padding:2px 6px;outline:none;width:100%;
+}
+
+/* ══ PIR CARD ══ */
+.pir-card{
+  display:flex;align-items:center;gap:12px;
+  background:var(--gbg);
+  backdrop-filter:blur(20px) saturate(1.4);
+  -webkit-backdrop-filter:blur(20px) saturate(1.4);
+  border:1px solid var(--gb);
+  border-radius:var(--r);padding:13px 15px;margin-bottom:16px;
+}
+.pir-ico{
+  width:36px;height:36px;border-radius:9px;flex-shrink:0;
+  background:var(--ico);display:flex;align-items:center;justify-content:center;transition:all 0.3s;
+}
+.pir-ico svg{width:17px;height:17px;stroke:var(--muted);fill:none;stroke-width:2;}
+.pir-card.pir-on .pir-ico{background:var(--amber-dim);}
+.pir-card.pir-on .pir-ico svg{stroke:var(--amber);}
+.pir-info{flex:1;}
+.pir-title{font-size:13px;font-weight:500;margin-bottom:1px;color:var(--text);}
+.pir-desc{font-size:10px;color:var(--muted);}
+.pir-btn{
+  display:flex;align-items:center;gap:5px;
+  padding:7px 13px;border-radius:99px;
+  border:1px solid var(--gb2);background:transparent;color:var(--muted);
+  font-size:11px;font-weight:500;cursor:pointer;
+  transition:all 0.18s;font-family:'DM Sans',sans-serif;flex-shrink:0;
+}
+.pir-btn.on{background:var(--amber-dim);border-color:var(--amber);color:var(--amber);}
+.bdot{width:5px;height:5px;border-radius:50%;background:currentColor;flex-shrink:0;}
+.pir-btn.on .bdot{animation:blink 1.5s infinite;}
+
+/* ══ LOG COLORS ══ */
+.log-line{display:flex;gap:8px;word-break:break-all;}
+.log-t{color:var(--muted);opacity:0.5;flex-shrink:0;font-size:10px;}
+.log-m{font-size:10px;}
+.log-m.pub{color:var(--accent);}
+.log-m.sub{color:var(--teal);}
+.log-m.sys{color:var(--amber);}
+.log-m.err{color:var(--red);}
+.btn-xsm{
+  background:none;border:none;color:var(--muted);font-size:10px;
+  cursor:pointer;font-family:'DM Sans',sans-serif;padding:2px 7px;
+  border-radius:5px;transition:all 0.15s;
+}
+.btn-xsm:hover{color:var(--text);background:var(--hov);}
+
+/* ══ CONNECTIONS PAGE ══ */
+.pg-hdr{margin-bottom:18px;}
+.pg-title{font-size:18px;font-weight:700;margin-bottom:3px;color:var(--text);}
+.pg-desc{font-size:11px;color:var(--muted);}
+.form-card{
+  background:var(--gbg2);
+  backdrop-filter:blur(22px) saturate(1.5);
+  -webkit-backdrop-filter:blur(22px) saturate(1.5);
+  border:1px solid var(--gb);
+  border-radius:var(--r);padding:18px;margin-bottom:14px;
+}
+.form-title{font-size:12px;font-weight:600;margin-bottom:13px;display:flex;align-items:center;gap:6px;color:var(--text);}
+.form-title svg{width:13px;height:13px;stroke:var(--accent);fill:none;stroke-width:2;}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.fg3{grid-template-columns:2fr 1fr 1fr;}
+.ff{display:flex;flex-direction:column;gap:4px;}
+.fl{font-size:9px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);}
+.fi{
+  background:var(--inp);border:1px solid var(--inpb);
+  border-radius:var(--rs);color:var(--text);
+  font-family:'JetBrains Mono',monospace;font-size:12px;
+  padding:8px 10px;outline:none;transition:border-color 0.15s;width:100%;
+}
+.fi:focus{border-color:var(--accent);}
+.fi::placeholder{color:var(--muted);opacity:0.55;}
+.form-actions{display:flex;gap:8px;align-items:center;margin-top:4px;flex-wrap:wrap;}
+.btn-save{
+  background:var(--accent);color:white;border:none;border-radius:var(--rs);
+  padding:8px 20px;font-size:13px;font-weight:600;cursor:pointer;
+  transition:all 0.15s;font-family:'DM Sans',sans-serif;
+  box-shadow:0 2px 10px rgba(128,0,128,0.3);
+}
+.btn-save:hover{background:var(--accent2);}
+.btn-cancel{
+  background:transparent;color:var(--muted);border:1px solid var(--gb2);
+  border-radius:var(--rs);padding:8px 13px;font-size:13px;font-weight:500;
+  cursor:pointer;transition:all 0.15s;font-family:'DM Sans',sans-serif;display:none;
+}
+.save-ok{font-size:11px;color:var(--green);display:none;font-weight:500;}
+.saved-list{display:flex;flex-direction:column;gap:8px;}
+.si{
+  background:var(--gbg);
+  backdrop-filter:blur(18px) saturate(1.3);
+  -webkit-backdrop-filter:blur(18px) saturate(1.3);
+  border:1px solid var(--gb);
+  border-radius:var(--r);padding:12px 14px;
+  display:flex;align-items:center;gap:10px;transition:border-color 0.2s;
+}
+.si.sel{border-color:rgba(128,0,128,0.42);background:rgba(128,0,128,0.07);}
+.si-ico{
+  width:32px;height:32px;border-radius:8px;flex-shrink:0;
+  background:var(--ico);display:flex;align-items:center;justify-content:center;
+}
+.si-ico svg{width:14px;height:14px;stroke:var(--accent);fill:none;stroke-width:2;}
+.si-info{flex:1;min-width:0;}
+.si-name{font-size:13px;font-weight:500;margin-bottom:2px;color:var(--text);}
+.si-detail{font-size:9px;color:var(--muted);font-family:'JetBrains Mono',monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.si-right{display:flex;gap:5px;align-items:center;flex-shrink:0;}
+.btn-use{
+  padding:5px 12px;border-radius:99px;font-size:10px;font-weight:500;cursor:pointer;
+  transition:all 0.15s;font-family:'DM Sans',sans-serif;
+  border:1px solid var(--gb2);background:transparent;color:var(--muted);
+}
+.btn-use:hover{background:var(--accent);color:white;border-color:var(--accent);}
+.btn-use.sel{background:rgba(128,0,128,0.14);color:var(--accent);border-color:rgba(128,0,128,0.38);pointer-events:none;}
+.ico-btn{
+  width:28px;height:28px;border-radius:7px;border:1px solid var(--gb);
+  background:transparent;color:var(--muted);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:all 0.15s;
+}
+.ico-btn svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2;}
+.ico-btn:hover{color:var(--text);border-color:var(--gb2);background:var(--hov);}
+.ico-btn.del:hover{color:var(--red);border-color:rgba(220,38,38,0.4);background:var(--red-dim);}
+.empty{
+  text-align:center;padding:30px 20px;color:var(--muted);font-size:12px;
+  background:var(--gbg);border:1px dashed var(--gb2);border-radius:var(--r);
+}
+
+/* ══ LOG PAGE ══ */
+.full-log{
+  background:var(--gbg2);
+  backdrop-filter:blur(20px) saturate(1.4);
+  -webkit-backdrop-filter:blur(20px) saturate(1.4);
+  border:1px solid var(--gb);border-radius:var(--r);overflow:hidden;
+}
+.full-log-hdr{
+  padding:10px 14px;border-bottom:1px solid var(--gb);
+  display:flex;align-items:center;justify-content:space-between;
+  font-size:11px;font-weight:500;color:var(--text2);
+}
+.full-log-body{
+  height:calc(100vh - 200px);overflow-y:auto;
+  padding:8px 12px;font-family:'JetBrains Mono',monospace;line-height:1.9;color:var(--muted);
+}
+.full-log-body::-webkit-scrollbar{width:3px;}
+.full-log-body::-webkit-scrollbar-thumb{background:var(--gb2);border-radius:99px;}
+
+/* ══ FOOTER ══ */
+footer{
+  position:relative;z-index:2;
+  text-align:center;
+  padding:16px 20px;
+  padding-bottom:calc(16px + env(safe-area-inset-bottom, 0px));
+  color:var(--ftxt);font-size:11px;
+  border-top:1px solid var(--gb);
+  background:var(--gbg);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  letter-spacing:0.03em;
+}
+footer .ft-name{font-weight:700;color:var(--accent);}
+.ft-links{margin-top:8px;display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;}
+.footer-link{
+  display:inline-flex;align-items:center;gap:5px;
+  color:var(--ftxt);text-decoration:none;font-size:11px;font-weight:500;
+  transition:color 0.15s;padding:4px 0;
+}
+.footer-link svg{flex-shrink:0;}
+.footer-link:hover{color:var(--accent);}
+
+/* ══ BOTTOM NAV (mobile) ══ */
+.bottom-nav{
+  display:none;
+  position:fixed;bottom:0;left:0;right:0;z-index:300;
+  background:var(--tbar);
+  backdrop-filter:blur(24px) saturate(1.6);
+  -webkit-backdrop-filter:blur(24px) saturate(1.6);
+  border-top:1px solid var(--gb);
+  padding-bottom:env(safe-area-inset-bottom, 0px);
+}
+.bn-inner{display:flex;}
+.bn-btn{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:8px 4px 6px;border:none;background:none;cursor:pointer;
+  font-size:9px;font-weight:600;color:var(--muted);
+  font-family:'DM Sans',sans-serif;transition:color 0.15s;
+  letter-spacing:0.04em;text-transform:uppercase;
+}
+.bn-btn svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:2;}
+.bn-btn.active{color:var(--accent);}
+
+/* ══ RESPONSIVE ══ */
+@media(max-width:860px){.relay-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:680px){.fg3{grid-template-columns:1fr 1fr;}}
+@media(max-width:540px){
+  .nav{display:none;}
+  .bottom-nav{display:block;}
+  .page{padding:14px 12px 90px;}
+  footer{padding-bottom:calc(70px + env(safe-area-inset-bottom, 0px));}
+  .topbar{height:50px;padding:0 12px;}
+  .logo-text{font-size:12px;}
+  .tbar-right{gap:5px;}
+  .pill{padding:3px 8px;font-size:9px;}
+  .dot{width:5px;height:5px;}
+  .conn-bar{flex-wrap:wrap;padding:10px 12px;}
+  .cb-ico{order:0;}.cb-info{order:1;flex:1;}
+  .cb-actions{order:2;width:100%;justify-content:flex-end;margin-top:2px;}
+  .dev-banner{padding:11px 12px;gap:10px;}
+  .dev-ava{width:38px;height:38px;}
+  .dev-name{font-size:13px;}
+  .relay-grid{grid-template-columns:repeat(2,1fr);gap:8px;}
+  .rc{padding:12px 11px;}
+  .rc-ico{width:30px;height:30px;}
+  .rc-name{font-size:11px;}
+  .pir-card{padding:11px 12px;}
+  .pir-title{font-size:12px;}
+  .pir-desc{display:none;}
+  .fg,.fg3{grid-template-columns:1fr;}
+  .form-card{padding:15px 13px;}
+  .si{flex-wrap:wrap;}
+  .si-right{width:100%;justify-content:flex-end;margin-top:2px;}
+  .full-log-body{height:calc(100vh - 220px);}
+  .ft-links{gap:10px;}
+  .footer-link{font-size:10px;}
+}
+@media(max-width:380px){
+  .relay-grid{grid-template-columns:repeat(2,1fr);}
+  .logo-text{display:none;}
+}
+</style>
+</head>
+<body>
+<div id="bg"></div>
+<div id="bgo"></div>
+
+<!-- ══ TOPBAR ══ -->
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+    </div>
+    <span class="logo-text">A.R.J.U.N.V.I.S</span>
+  </div>
+  <nav class="nav">
+    <button class="nav-btn active" onclick="go('dashboard')" id="tab-dashboard">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+      <span>Dashboard</span>
+    </button>
+    <button class="nav-btn" onclick="go('connections')" id="tab-connections">
+      <svg viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/></svg>
+      <span>Connections</span>
+    </button>
+    <button class="nav-btn" onclick="go('log')" id="tab-log">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>
+      <span>Log</span>
+    </button>
+  </nav>
+  <div class="tbar-right">
+    <button class="theme-btn" onclick="toggleTheme()" title="Toggle theme">
+      <svg id="themeIcon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+    <div class="pill idle" id="pill">
+      <div class="dot"></div>
+      <span id="pillTxt">Not connected</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ DASHBOARD ══ -->
+<div class="page active" id="page-dashboard">
+  <div class="conn-bar">
+    <div class="cb-ico"><svg viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/></svg></div>
+    <div class="cb-info">
+      <div class="cb-lbl">Connection</div>
+      <div class="cb-val empty" id="cbVal">No connection selected</div>
+    </div>
+    <div class="cb-actions">
+      <button class="btn-ghost" onclick="go('connections')">Change</button>
+      <button class="btn-connect on" id="cbBtn" onclick="handleCbBtn()">
+        <svg viewBox="0 0 24 24"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>Connect
+      </button>
+    </div>
+  </div>
+
+  <div class="dev-banner">
+    <div class="dev-ava">
+      <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><circle cx="7" cy="10" r="1" fill="var(--accent)" stroke="none"/><circle cx="12" cy="10" r="1" fill="var(--accent)" stroke="none"/><circle cx="17" cy="10" r="1" fill="var(--accent)" stroke="none"/></svg>
+    </div>
+    <div class="dev-info">
+      <div class="dev-name" id="devName">ESP32 Smart Controller</div>
+      <div class="dev-meta" id="devMeta">Select a connection to begin</div>
+    </div>
+    <div class="online-badge" id="onlineBadge">
+      <div class="online-dot"></div>Online
+    </div>
+  </div>
+
+  <div class="sec">
+    <span>Relay Channels</span>
+    <div style="display:flex;gap:6px">
+      <button class="all-btn refresh-btn" onclick="refreshStates()" id="refreshBtn" title="Refresh retained states">
+        <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" style="display:inline;vertical-align:middle;margin-right:3px"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>Refresh
+      </button>
+      <button class="all-btn" onclick="allOff()">All Off</button>
+    </div>
+  </div>
+  <div class="relay-grid" id="relayGrid"></div>
+
+  <div class="sec"><span>Automation</span></div>
+  <div class="pir-card" id="pirCard">
+    <div class="pir-ico">
+      <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+    </div>
+    <div class="pir-info">
+      <div class="pir-title">PIR Motion Sensor</div>
+      <div class="pir-desc">Auto turn-off after 10 min of no motion</div>
+    </div>
+    <button class="pir-btn" id="pirBtn" onclick="togglePIR()">
+      <div class="bdot"></div><span id="pirTxt">Enable</span>
+    </button>
+  </div>
+</div>
+
+<!-- ══ CONNECTIONS ══ -->
+<div class="page" id="page-connections">
+  <div class="pg-hdr">
+    <div class="pg-title">Connections</div>
+    <div class="pg-desc">Save broker details. Select a connection then connect from Dashboard.</div>
+  </div>
+  <div class="form-card">
+    <div class="form-title">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+      <span id="formHead">New Connection</span>
+    </div>
+    <div class="fg">
+      <div class="ff"><div class="fl">Name</div><input class="fi" id="fName" placeholder="My ESP32 Home"/></div>
+      <div class="ff"><div class="fl">Device ID</div><input class="fi" id="fDev" placeholder="ESP32_ABCD1234"/></div>
+    </div>
+    <div class="fg fg3">
+      <div class="ff"><div class="fl">Broker</div><input class="fi" id="fBroker" value="broker.hivemq.com"/></div>
+      <!-- FIX: Port default changed to 8884 (WSS) — was 8083 (WS, blocked on HTTPS) -->
+      <div class="ff"><div class="fl">Port (WSS)</div><input class="fi" id="fPort" value="8884" placeholder="8884"/></div>
+      <div class="ff"><div class="fl">Username (opt)</div><input class="fi" id="fUser" placeholder="optional"/></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn-save" onclick="saveConn()">Save</button>
+      <button class="btn-cancel" id="cancelBtn" onclick="resetForm()">Cancel</button>
+      <span class="save-ok" id="saveOk">✓ Saved!</span>
+    </div>
+  </div>
+  <div class="sec" style="margin-bottom:10px;"><span>Saved Connections</span></div>
+  <div class="saved-list" id="savedList"></div>
+</div>
+
+<!-- ══ LOG ══ -->
+<div class="page" id="page-log">
+  <div class="pg-hdr">
+    <div class="pg-title">MQTT Log</div>
+    <div class="pg-desc">Live activity — all publish, subscribe and system events.</div>
+  </div>
+  <div class="full-log">
+    <div class="full-log-hdr">
+      <span>Live Feed</span>
+      <button class="btn-xsm" onclick="clearFullLog()">Clear</button>
+    </div>
+    <div class="full-log-body" id="fullLog">
+      <div class="log-line"><span class="log-t">--:--:--</span><span class="log-m sys">No activity yet…</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ BOTTOM NAV ══ -->
+<div class="bottom-nav">
+  <div class="bn-inner">
+    <button class="bn-btn active" onclick="go('dashboard')" id="bn-dashboard">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>Dashboard
+    </button>
+    <button class="bn-btn" onclick="go('connections')" id="bn-connections">
+      <svg viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/></svg>Connect
+    </button>
+    <button class="bn-btn" onclick="go('log')" id="bn-log">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>Log
+    </button>
+  </div>
+</div>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+  Made with ♥ by <span class="ft-name">Arjun Purwar</span> &nbsp;·&nbsp; A.R.J.U.N.V.I.S Smart Home
+  <div class="ft-links">
+    <a href="https://www.linkedin.com/in/arjun-purwar-9b035a2a7" target="_blank" rel="noopener" class="footer-link">
+      <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>LinkedIn
+    </a>
+    <span style="opacity:0.3">·</span>
+    <a href="https://github.com/Arjunpurwar2005" target="_blank" rel="noopener" class="footer-link">
+      <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>GitHub
+    </a>
+  </div>
+</footer>
+
+<script>
+/* ── RELAY CONFIG ── */
+const DEFAULT_NAMES=['Living Room Light','Bedroom Fan','Hall AC','Bathroom Geyser'];
+const ICONS=[
+  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 18h6M10 22h4M12 2C8 6 6 10 6 14a6 6 0 0 0 12 0c0-4-2-8-6-12z"/></svg>`,
+  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>`,
+  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="3" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>`,
+  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2a7 7 0 0 1 7 7c0 5.25-7 13-7 13S5 14.25 5 9a7 7 0 0 1 7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>`
+];
+
+/* ── STATE ── */
+let relayState=[false,false,false,false];
+let pirState=false;
+let client=null;
+let baseTopic='';
+let editId=null;
+
+/* ── BACKGROUND ── */
+function applyBg(theme){
+  if(theme==='light'){
+    document.body.style.backgroundImage="url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&q=75&auto=format&fit=crop')";
+    document.body.style.backgroundSize='cover';
+    document.body.style.backgroundPosition='center';
+  } else {
+    document.body.style.backgroundImage="url('https://images.unsplash.com/photo-1560448204-603b3fc33ddc?w=1200&q=75&auto=format&fit=crop')";
+    document.body.style.backgroundSize='cover';
+    document.body.style.backgroundPosition='center';
+  }
+}
+
+/* ── RELAY NAMES ── */
+function getNames(){try{return JSON.parse(localStorage.getItem('arjunvis_rnames')||'null')||[...DEFAULT_NAMES];}catch(e){return[...DEFAULT_NAMES];}}
+function saveNames(n){localStorage.setItem('arjunvis_rnames',JSON.stringify(n));}
+
+/* ── BUILD RELAY GRID ── */
+function buildGrid(){
+  const names=getNames();
+  document.getElementById('relayGrid').innerHTML=names.map((n,i)=>`
+    <div class="rc off" id="rc${i}" onclick="handleRelayClick(event,${i})">
+      <div class="rc-top">
+        <div class="rc-ico">${ICONS[i]}</div>
+        <div class="toggle"></div>
+      </div>
+      <div class="rc-name-wrap">
+        <div class="rc-name" id="rn${i}">${n}</div>
+        <button class="rc-edit-btn" onclick="startRename(event,${i})" title="Rename">
+          <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </button>
+      </div>
+      <div class="rc-state" id="rs${i}">OFF</div>
+    </div>`).join('');
+}
+buildGrid();
+
+/* ── RELAY RENAME ── */
+function startRename(e,i){
+  e.stopPropagation();
+  const el=document.getElementById('rn'+i);
+  const cur=el.textContent;
+  el.innerHTML=`<input class="rc-name-input" id="rni${i}" value="${cur}" maxlength="18" onclick="event.stopPropagation()"/>`;
+  const inp=document.getElementById('rni'+i);
+  inp.focus();inp.select();
+  const done=()=>finishRename(i,inp.value);
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter')done();if(e.key==='Escape'){el.textContent=cur;}});
+  inp.addEventListener('blur',done);
+}
+function finishRename(i,val){
+  const name=val.trim()||DEFAULT_NAMES[i];
+  const names=getNames();names[i]=name;saveNames(names);
+  buildGrid();
+  relayState.forEach((s,idx)=>{
+    const el=document.getElementById('rc'+idx);
+    if(el){el.className='rc '+(s?'on':'off');document.getElementById('rs'+idx).textContent=s?'ON':'OFF';}
+  });
+}
+function handleRelayClick(e,i){
+  if(e.target.closest('.rc-edit-btn')||e.target.closest('.rc-name-input'))return;
+  toggleRelay(i);
+}
+
+/* ── NAV ── */
+function go(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn,.bn-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.getElementById('tab-'+id).classList.add('active');
+  const bn=document.getElementById('bn-'+id);if(bn)bn.classList.add('active');
+  if(id==='connections')renderList();
+  window.scrollTo(0,0);
+}
+
+/* ── THEME ── */
+function toggleTheme(){
+  const html=document.documentElement;
+  const next=html.getAttribute('data-theme')==='dark'?'light':'dark';
+  html.setAttribute('data-theme',next);
+  localStorage.setItem('arjunvis_theme',next);
+  applyBg(next);updateThemeIcon(next==='dark');
+}
+function updateThemeIcon(isDark){
+  document.getElementById('themeIcon').innerHTML=isDark
+    ?`<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>`
+    :`<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>`;
+}
+
+/* ── CONNECTIONS STORAGE ── */
+const LS='arjunvis_conns',LSA='arjunvis_active';
+const getConns=()=>{try{return JSON.parse(localStorage.getItem(LS)||'[]');}catch(e){return[];}};
+const putConns=a=>localStorage.setItem(LS,JSON.stringify(a));
+const getActive=()=>localStorage.getItem(LSA)||null;
+const putActive=id=>localStorage.setItem(LSA,id);
+
+/* ── FORM ── */
+function saveConn(){
+  const name=document.getElementById('fName').value.trim();
+  const dev=document.getElementById('fDev').value.trim();
+  const broker=document.getElementById('fBroker').value.trim();
+  const port=document.getElementById('fPort').value.trim();
+  const user=document.getElementById('fUser').value.trim();
+  if(!name||!dev||!broker||!port){alert('Fill Name, Device ID, Broker and Port.');return;}
+  const conns=getConns();
+  if(editId){const i=conns.findIndex(c=>c.id===editId);if(i!==-1)conns[i]={id:editId,name,dev,broker,port,user};editId=null;}
+  else conns.push({id:Date.now()+'',name,dev,broker,port,user});
+  putConns(conns);resetForm();renderList();updateCB();
+  const ok=document.getElementById('saveOk');ok.style.display='inline';setTimeout(()=>ok.style.display='none',2000);
+}
+function resetForm(){
+  ['fName','fDev','fUser'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('fBroker').value='broker.hivemq.com';
+  document.getElementById('fPort').value='8884';
+  document.getElementById('formHead').textContent='New Connection';
+  document.getElementById('cancelBtn').style.display='none';editId=null;
+}
+function startEdit(id){
+  const c=getConns().find(x=>x.id===id);if(!c)return;
+  editId=id;
+  document.getElementById('fName').value=c.name;
+  document.getElementById('fDev').value=c.dev;
+  document.getElementById('fBroker').value=c.broker;
+  document.getElementById('fPort').value=c.port;
+  document.getElementById('fUser').value=c.user||'';
+  document.getElementById('formHead').textContent='Edit Connection';
+  document.getElementById('cancelBtn').style.display='inline-block';
+  document.querySelector('.form-card').scrollIntoView({behavior:'smooth'});
+}
+function delConn(id){
+  if(!confirm('Delete this connection?'))return;
+  putConns(getConns().filter(c=>c.id!==id));
+  if(getActive()===id){localStorage.removeItem(LSA);updateCB();}renderList();
+}
+function selectConn(id){putActive(id);renderList();updateCB();}
+function renderList(){
+  const conns=getConns(),cur=getActive(),el=document.getElementById('savedList');
+  if(!conns.length){el.innerHTML=`<div class="empty">No saved connections yet.</div>`;return;}
+  el.innerHTML=conns.map(c=>{
+    const sel=c.id===cur;
+    return `<div class="si ${sel?'sel':''}">
+      <div class="si-ico"><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/></svg></div>
+      <div class="si-info"><div class="si-name">${c.name}</div><div class="si-detail">${c.dev} · ${c.broker}:${c.port}</div></div>
+      <div class="si-right">
+        <button class="btn-use ${sel?'sel':''}" ${sel?'disabled':''} onclick="selectConn('${c.id}')">${sel?'✓ Active':'Use'}</button>
+        <button class="ico-btn" onclick="startEdit('${c.id}')"><svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+        <button class="ico-btn del" onclick="delConn('${c.id}')"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg></button>
+      </div></div>`;
+  }).join('');
+}
+
+/* ── CONNECT BAR ── */
+function updateCB(){
+  const id=getActive(),conn=getConns().find(c=>c.id===id);
+  const val=document.getElementById('cbVal'),btn=document.getElementById('cbBtn');
+  const isOn=client&&client.connected;
+  if(!conn){
+    val.textContent='No connection selected';val.className='cb-val empty';
+    btn.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:11px;height:11px"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>Connect`;
+    btn.className='btn-connect on';return;
+  }
+  val.textContent=`${conn.name} · ${conn.dev} · ${conn.broker}:${conn.port}`;val.className='cb-val';
+  if(isOn){
+    btn.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:11px;height:11px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>Disconnect`;
+    btn.className='btn-connect off';
+  }else{
+    btn.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="width:11px;height:11px"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>Connect`;
+    btn.className='btn-connect on';
+  }
+}
+function handleCbBtn(){
+  if(client&&client.connected){doDisconnect();return;}
+  const id=getActive();if(!id){go('connections');return;}
+  const conn=getConns().find(c=>c.id===id);if(conn)doConnect(conn);
+}
+
+/* ══════════════════════════════════════════════
+   MQTT — FIXED CONNECTION
+   ══════════════════════════════════════════════
+   Fixes applied vs original code:
+   1. ws:// → smart protocol: wss:// for port 8883/8884 or HTTPS pages
+   2. reconnectPeriod: 5000 → 0  (was causing silent loop, masking real errors)
+   3. Default port: 8083 → 8884  (HiveMQ WSS port, works everywhere)
+   ══════════════════════════════════════════════ */
+function doConnect(conn){
+  baseTopic='home/'+conn.dev;
+  document.getElementById('devName').textContent=conn.name;
+  document.getElementById('devMeta').textContent=conn.dev+' · '+conn.broker+':'+conn.port;
+  setPill('connecting','Connecting…');
+  if(client){try{client.end(true);}catch(e){}}
+
+  // FIX 1: smart protocol — wss:// for secure ports or HTTPS pages, ws:// otherwise
+  const isSecure = conn.port==='8884' || conn.port==='8883' || location.protocol==='https:';
+  const proto = isSecure ? 'wss' : 'ws';
+  const url = `${proto}://${conn.broker}:${conn.port}/mqtt`;
+  addLog('sys',`Connecting → ${url}`);
+
+  const opts={
+    clientId:'arjunvis_'+Math.random().toString(16).slice(2),
+    clean:true,
+    // FIX 2: reconnectPeriod 0 = manual reconnect only, no silent retry loops
+    reconnectPeriod:0,
+    connectTimeout:12000
+  };
+  if(conn.user)opts.username=conn.user;
+
+  client=mqtt.connect(url,opts);
+
+  client.on('connect',()=>{
+    setPill('connected','Connected');
+    document.getElementById('onlineBadge').style.display='flex';
+    updateCB();
+    addLog('sys','✓ Connected · subscribing to '+baseTopic+'/#');
+    client.subscribe(baseTopic+'/#', (err)=>{
+      if(err) addLog('err','Subscribe error: '+err.message);
+      else addLog('sys','✓ Subscribed — retained states loading…');
+    });
+  });
+
+  client.on('message',(topic,payload)=>{
+    const msg=payload.toString().trim();
+    const short=topic.replace(baseTopic+'/','');
+    addLog('sub',`← [${short}] ${msg}`);
+    if(topic===baseTopic+'/pir'){pirState=msg==='ON';updatePIR();}
+    for(let i=0;i<4;i++)if(topic===baseTopic+'/relay/'+(i+1)){relayState[i]=msg==='ON';updateCard(i);}
+  });
+
+  client.on('error',err=>{
+    setPill('error','Error');
+    addLog('err','⚠ '+err.message);
+    // Show helpful tip
+    if(err.message && err.message.includes('WebSocket')){
+      addLog('sys','Tip: check broker/port — use 8884 for wss:// or 8083 for ws://');
+    }
+  });
+
+  client.on('close',()=>{
+    setPill('idle','Disconnected');
+    document.getElementById('onlineBadge').style.display='none';
+    updateCB();
+    addLog('sys','Connection closed');
+  });
+
+  client.on('offline',()=>{
+    setPill('idle','Offline');
+    document.getElementById('onlineBadge').style.display='none';
+    updateCB();
+    addLog('sys','Broker unreachable');
+  });
+
+  client.on('reconnect',()=>{
+    addLog('sys','Attempting reconnect…');
+  });
+}
+
+function doDisconnect(){
+  if(client){try{client.end(true);}catch(e){}client=null;}
+  setPill('idle','Not connected');
+  document.getElementById('onlineBadge').style.display='none';
+  updateCB();addLog('sys','Disconnected');
+}
+
+/* ── CONTROLS ── */
+function toggleRelay(i){
+  relayState[i]=!relayState[i];
+  updateCard(i);
+  publish(baseTopic+'/relay/'+(i+1),relayState[i]?'ON':'OFF');
+}
+function allOff(){
+  for(let i=0;i<4;i++)if(relayState[i]){relayState[i]=false;updateCard(i);publish(baseTopic+'/relay/'+(i+1),'OFF');}
+}
+function refreshStates(){
+  if(!client||!client.connected){addLog('err','Not connected — connect first!');return;}
+  const btn=document.getElementById('refreshBtn');
+  btn.classList.add('spinning');
+  addLog('sys','↻ Re-subscribing for latest retained states…');
+  client.unsubscribe(baseTopic+'/#',()=>{
+    client.subscribe(baseTopic+'/#',()=>{
+      addLog('sys','✓ Refresh complete');
+      btn.classList.remove('spinning');
+    });
+  });
+  setTimeout(()=>btn.classList.remove('spinning'),3000);
+}
+function togglePIR(){
+  pirState=!pirState;updatePIR();
+  publish(baseTopic+'/pir',pirState?'ON':'OFF');
+}
+function updatePIR(){
+  const btn=document.getElementById('pirBtn'),card=document.getElementById('pirCard');
+  pirState?btn.classList.add('on'):btn.classList.remove('on');
+  pirState?card.classList.add('pir-on'):card.classList.remove('pir-on');
+  document.getElementById('pirTxt').textContent=pirState?'Active':'Enable';
+}
+function updateCard(i){
+  const el=document.getElementById('rc'+i);if(el)el.className='rc '+(relayState[i]?'on':'off');
+  const rs=document.getElementById('rs'+i);if(rs)rs.textContent=relayState[i]?'ON':'OFF';
+}
+function publish(topic,msg){
+  if(!client||!client.connected){addLog('err','Not connected');return;}
+  client.publish(topic,msg,{retain:true});
+  addLog('pub','→ ['+topic.replace(baseTopic+'/','')+'] '+msg);
+}
+function setPill(state,txt){
+  document.getElementById('pill').className='pill '+state;
+  document.getElementById('pillTxt').textContent=txt;
+}
+
+/* ── LOG ── */
+function addLog(type,msg){
+  const t=new Date().toTimeString().slice(0,8);
+  const html=`<div class="log-line"><span class="log-t">${t}</span><span class="log-m ${type}">${msg}</span></div>`;
+  const full=document.getElementById('fullLog');
+  full.insertAdjacentHTML('beforeend',html);
+  full.scrollTop=full.scrollHeight;
+  while(full.children.length>300)full.removeChild(full.firstChild);
+}
+function clearFullLog(){document.getElementById('fullLog').innerHTML='';}
+
+/* ── INIT ── */
+window.addEventListener('load',()=>{
+  const theme=localStorage.getItem('arjunvis_theme')||'dark';
+  document.documentElement.setAttribute('data-theme',theme);
+  updateThemeIcon(theme==='dark');
+  applyBg(theme);
+  updateCB();
+  renderList();
+  addLog('sys','A.R.J.U.N.V.I.S ready — go to Connections to add your ESP32');
+});
+</script>
+</body>
+</html>
